@@ -155,3 +155,44 @@ body {
 #interpolation-image-wrapper img {
   border-radius: 5px;
 }
+
+/* ===================== Comparison (Interactive 3D) ===================== */
+#comparison-grid-header,
+#comparison-grid-viewers {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr;
+  gap: 1rem;
+}
+
+#comparison-left-stack {
+  display: flex;
+  flex-direction: column;
+  /* Left column is 1fr wide while middle/right are 2fr.
+     To align block heights, left stack should be 2/3 (W/H) when others are 4/3. */
+  aspect-ratio: 2 / 3;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+#input-viewer,
+#gt-viewer {
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+#unico-viewer,
+#method-viewer {
+  aspect-ratio: 4 / 3;
+  min-height: 220px;
+  min-width: 0;
+}
+
+#input-viewer canvas,
+#gt-viewer canvas,
+#unico-viewer canvas,
+#method-viewer canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}

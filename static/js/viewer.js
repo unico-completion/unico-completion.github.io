@@ -1,278 +1,526 @@
-const container = document.getElementById("shared-viewer");
-let scene, camera, renderer, controls;
-let currentObj = null;
-let activeIndex = null;
+const unicoContainer = document.getElementById("unico-viewer");
+const methodContainer = document.getElementById("method-viewer");
+const gtContainer = document.getElementById("gt-viewer");
+const inputContainer = document.getElementById("input-viewer");
+
+let camera;
+let controls;
 let autoRotate = true;
 let running = false;
-let loading = false;
 
-const cols = 7;
-const rows = 6;
-const total = 42;
+let currentSample = null;
+let currentMethod = "symm";
 
-const models = [
-  // ---------- Airplane Row 1 ----------
-  "./static/data/airplane/89b42bde2332e5c067c5e3041553656b/00_draco.glb",
-  "./static/data/airplane/89b42bde2332e5c067c5e3041553656b/89b42bde2332e5c067c5e3041553656b_draco.glb",
-  "./static/data/airplane/89b42bde2332e5c067c5e3041553656b/equiv_89b42bde2332e5c067c5e3041553656b_draco.glb",
-  "./static/data/airplane/89b42bde2332e5c067c5e3041553656b/ada_89b42bde2332e5c067c5e3041553656b_draco.glb",
-  "./static/data/airplane/89b42bde2332e5c067c5e3041553656b/escape_89b42bde2332e5c067c5e3041553656b_draco.glb",
-  "./static/data/airplane/89b42bde2332e5c067c5e3041553656b/equivpcn_89b42bde2332e5c067c5e3041553656b_draco.glb",
-  "./static/data/airplane/89b42bde2332e5c067c5e3041553656b/scarp_89b42bde2332e5c067c5e3041553656b_draco.glb",
+const NORMALIZATION_BY_SAMPLE = new Map();
+let VIEWERS = [];
 
-  // ---------- Airplane Row 2 ----------
-  "./static/data/airplane/48996e27f430ce286f67a5681eaf4d9f/00_draco.glb",
-  "./static/data/airplane/48996e27f430ce286f67a5681eaf4d9f/48996e27f430ce286f67a5681eaf4d9f_draco.glb",
-  "./static/data/airplane/48996e27f430ce286f67a5681eaf4d9f/equiv_48996e27f430ce286f67a5681eaf4d9f_draco.glb",
-  "./static/data/airplane/48996e27f430ce286f67a5681eaf4d9f/ada_48996e27f430ce286f67a5681eaf4d9f_draco.glb",
-  "./static/data/airplane/48996e27f430ce286f67a5681eaf4d9f/escape_48996e27f430ce286f67a5681eaf4d9f_draco.glb",
-  "./static/data/airplane/48996e27f430ce286f67a5681eaf4d9f/equivpcn_48996e27f430ce286f67a5681eaf4d9f_draco.glb",
-  "./static/data/airplane/48996e27f430ce286f67a5681eaf4d9f/scarp_48996e27f430ce286f67a5681eaf4d9f_draco.glb",
+const OBJ_LOADER = new THREE.OBJLoader();
+const PLY_LOADER = new THREE.PLYLoader();
 
-  // ---------- Lamp Row 1 ----------
-  "./static/data/lamp/846ae34d173c06d828e0b580c4eee0e6/00_draco.glb",
-  "./static/data/lamp/846ae34d173c06d828e0b580c4eee0e6/846ae34d173c06d828e0b580c4eee0e6_draco.glb",
-  "./static/data/lamp/846ae34d173c06d828e0b580c4eee0e6/equiv_846ae34d173c06d828e0b580c4eee0e6_draco.glb",
-  "./static/data/lamp/846ae34d173c06d828e0b580c4eee0e6/ada_846ae34d173c06d828e0b580c4eee0e6_draco.glb",
-  "./static/data/lamp/846ae34d173c06d828e0b580c4eee0e6/escape_846ae34d173c06d828e0b580c4eee0e6_draco.glb",
-  "./static/data/lamp/846ae34d173c06d828e0b580c4eee0e6/equivpcn_846ae34d173c06d828e0b580c4eee0e6_draco.glb",
-  "./static/data/lamp/846ae34d173c06d828e0b580c4eee0e6/scarp_846ae34d173c06d828e0b580c4eee0e6_draco.glb",
+function makeViewer(container, ids) {
+  const viewer = {
+    container,
+    scene: null,
+    renderer: null,
+    currentObj: null,
+    loading: false,
+    loaderEl: document.getElementById(ids.loader),
+    progressEl: document.getElementById(ids.progress),
+    placeholderEl: document.getElementById(ids.placeholder)
+  };
 
-  // ---------- Lamp Row 2 ----------
-  "./static/data/lamp/ced76fc046191db3fe5c8ffd0f5eba47/00_draco.glb",
-  "./static/data/lamp/ced76fc046191db3fe5c8ffd0f5eba47/ced76fc046191db3fe5c8ffd0f5eba47_draco.glb",
-  "./static/data/lamp/ced76fc046191db3fe5c8ffd0f5eba47/equiv_ced76fc046191db3fe5c8ffd0f5eba47_draco.glb",
-  "./static/data/lamp/ced76fc046191db3fe5c8ffd0f5eba47/ada_ced76fc046191db3fe5c8ffd0f5eba47_draco.glb",
-  "./static/data/lamp/ced76fc046191db3fe5c8ffd0f5eba47/escape_ced76fc046191db3fe5c8ffd0f5eba47_draco.glb",
-  "./static/data/lamp/ced76fc046191db3fe5c8ffd0f5eba47/equivpcn_ced76fc046191db3fe5c8ffd0f5eba47_draco.glb",
-  "./static/data/lamp/ced76fc046191db3fe5c8ffd0f5eba47/scarp_ced76fc046191db3fe5c8ffd0f5eba47_draco.glb",
+  if (!container) return viewer;
 
-  // ---------- Table Row 1 ----------
-  "./static/data/table/5bcb0976657fe6df37b2bb75885cfc44/00_draco.glb",
-  "./static/data/table/5bcb0976657fe6df37b2bb75885cfc44/5bcb0976657fe6df37b2bb75885cfc44_draco.glb",
-  "./static/data/table/5bcb0976657fe6df37b2bb75885cfc44/equiv_5bcb0976657fe6df37b2bb75885cfc44_draco.glb",
-  "./static/data/table/5bcb0976657fe6df37b2bb75885cfc44/ada_5bcb0976657fe6df37b2bb75885cfc44_draco.glb",
-  "./static/data/table/5bcb0976657fe6df37b2bb75885cfc44/escape_5bcb0976657fe6df37b2bb75885cfc44_draco.glb",
-  "./static/data/table/5bcb0976657fe6df37b2bb75885cfc44/equivpcn_5bcb0976657fe6df37b2bb75885cfc44_draco.glb",
-  "./static/data/table/5bcb0976657fe6df37b2bb75885cfc44/scarp_5bcb0976657fe6df37b2bb75885cfc44_draco.glb",
+  viewer.scene = new THREE.Scene();
+  viewer.scene.background = new THREE.Color(0xffffff);
+  viewer.scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  dirLight.position.set(5, 10, 5);
+  viewer.scene.add(dirLight);
 
-  // ---------- Table Row 2 ----------
-  "./static/data/table/d31b0d2a41051f2c7b79156a61ad4c01/00_draco.glb",
-  "./static/data/table/d31b0d2a41051f2c7b79156a61ad4c01/d31b0d2a41051f2c7b79156a61ad4c01_draco.glb",
-  "./static/data/table/d31b0d2a41051f2c7b79156a61ad4c01/equiv_d31b0d2a41051f2c7b79156a61ad4c01_draco.glb",
-  "./static/data/table/d31b0d2a41051f2c7b79156a61ad4c01/ada_d31b0d2a41051f2c7b79156a61ad4c01_draco.glb",
-  "./static/data/table/d31b0d2a41051f2c7b79156a61ad4c01/escape_d31b0d2a41051f2c7b79156a61ad4c01_draco.glb",
-  "./static/data/table/d31b0d2a41051f2c7b79156a61ad4c01/equivpcn_d31b0d2a41051f2c7b79156a61ad4c01_draco.glb",
-  "./static/data/table/d31b0d2a41051f2c7b79156a61ad4c01/scarp_d31b0d2a41051f2c7b79156a61ad4c01_draco.glb"
-];
-
-// ========== Loader ==========
-const loader = new THREE.GLTFLoader();
-const dracoLoader = new THREE.DRACOLoader();
-dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
-loader.setDRACOLoader(dracoLoader);
-
-// ========== Utility functions ==========
-function clearCurrentObj() {
-  if (currentObj) {
-    currentObj.traverse((child) => {
-      if (child.isMesh) {
-        child.geometry.dispose();
-        if (Array.isArray(child.material)) {
-          child.material.forEach((m) => m.dispose());
-        } else {
-          child.material.dispose();
-        }
-      }
-    });
-    scene.remove(currentObj);
-    currentObj = null;
-  }
-}
-
-function animate() {
-  if (!running) return;
-  requestAnimationFrame(animate);
-  if (controls) controls.update();
-  if (currentObj && autoRotate) currentObj.rotation.y += 0.01;
-  renderer.render(scene, camera);
-}
-
-function startRenderLoop() {
-  if (!running) {
-    running = true;
-    animate();
-  }
-}
-
-// ========== Initialize Viewer ==========
-function initViewer() {
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
-
-  camera = new THREE.PerspectiveCamera(
-    45,
-    container.clientWidth / container.clientHeight,
-    0.1,
-    1000
-  );
-  camera.position.set(0.5, 0.5, 0.6);
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(container.clientWidth, container.clientHeight);
-
+  viewer.renderer = new THREE.WebGLRenderer({ antialias: true });
+  viewer.renderer.setPixelRatio(window.devicePixelRatio || 1);
+  // Avoid initializing with 0x0; let sync/resize handle final CSS-driven size.
+  const initW = Math.max(1, container.clientWidth);
+  const initH = Math.max(1, container.clientHeight);
+  viewer.renderer.setSize(initW, initH, false);
   const oldCanvas = container.querySelector("canvas");
   if (oldCanvas) oldCanvas.remove();
-  container.appendChild(renderer.domElement);
+  viewer.renderer.domElement.style.display = "block";
+  viewer.renderer.domElement.style.width = "100%";
+  viewer.renderer.domElement.style.height = "100%";
+  container.appendChild(viewer.renderer.domElement);
 
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  return viewer;
+}
+
+function syncRendererSize(viewer) {
+  if (!viewer || !viewer.container || !viewer.renderer) return false;
+  const w = viewer.container.clientWidth;
+  const h = viewer.container.clientHeight;
+  if (w <= 0 || h <= 0) return false;
+
+  const canvas = viewer.renderer.domElement;
+  const dpr = window.devicePixelRatio || 1;
+  const targetW = Math.floor(w * dpr);
+  const targetH = Math.floor(h * dpr);
+
+  if (canvas.width !== targetW || canvas.height !== targetH) {
+    viewer.renderer.setPixelRatio(dpr);
+    viewer.renderer.setSize(w, h, false);
+    return true;
+  }
+  return false;
+}
+
+function clearObject(viewer) {
+  if (!viewer || !viewer.scene || !viewer.currentObj) return;
+
+  viewer.currentObj.traverse((child) => {
+    if (child.isMesh || child.isPoints) {
+      if (child.geometry) child.geometry.dispose();
+      if (child.material) {
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        for (const m of materials) {
+          if (m && m.dispose) m.dispose();
+        }
+      }
+    }
+  });
+
+  viewer.scene.remove(viewer.currentObj);
+  viewer.currentObj = null;
+}
+
+function setLoading(viewer, isLoading) {
+  if (viewer.loaderEl) viewer.loaderEl.style.display = isLoading ? "block" : "none";
+  if (viewer.progressEl) viewer.progressEl.style.width = "0%";
+  if (viewer.placeholderEl) viewer.placeholderEl.style.display = isLoading ? "none" : "block";
+}
+
+function styleMesh(object3d) {
+  object3d.traverse((child) => {
+    if (child.isMesh) {
+      if (child.geometry) child.geometry.computeVertexNormals();
+      child.material = new THREE.MeshStandardMaterial({
+        color: 0xd8cab0,
+        roughness: 0.7,
+        metalness: 0.1
+      });
+      child.frustumCulled = false;
+    }
+  });
+}
+
+function centerAndScale(object3d) {
+  const box = new THREE.Box3().setFromObject(object3d);
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const scale = maxDim > 0 ? 0.9 / maxDim : 1.0;
+  object3d.scale.setScalar(scale);
+
+  const box2 = new THREE.Box3().setFromObject(object3d);
+  const center = box2.getCenter(new THREE.Vector3());
+  object3d.position.sub(center);
+}
+
+function resetTransform(object3d) {
+  object3d.position.set(0, 0, 0);
+  object3d.rotation.set(0, 0, 0);
+  object3d.scale.set(1, 1, 1);
+}
+
+function getMaxDim(object3d) {
+  const box = new THREE.Box3().setFromObject(object3d);
+  const size = box.getSize(new THREE.Vector3());
+  return Math.max(size.x, size.y, size.z);
+}
+
+function normalizeGroupWithScale(group, scaleFactor) {
+  if (!group) return;
+  resetTransform(group);
+
+  const box = new THREE.Box3().setFromObject(group);
+  const center = box.getCenter(new THREE.Vector3());
+
+  group.scale.setScalar(scaleFactor);
+  group.position.copy(center.multiplyScalar(-scaleFactor));
+}
+
+function maybeSetReferenceScale(sampleId, sourceGroup) {
+  if (!sampleId || !sourceGroup) return false;
+  if (NORMALIZATION_BY_SAMPLE.has(sampleId)) return false;
+
+  resetTransform(sourceGroup);
+  const maxDim = getMaxDim(sourceGroup);
+  const scaleFactor = maxDim > 0 ? 0.9 / maxDim : 1.0;
+  NORMALIZATION_BY_SAMPLE.set(sampleId, { scaleFactor });
+  return true;
+}
+
+function applyNormalizationForCurrentSample() {
+  if (!currentSample) return;
+  const norm = NORMALIZATION_BY_SAMPLE.get(currentSample);
+  if (!norm) return;
+
+  for (const v of VIEWERS) {
+    if (!v || !v.currentObj) continue;
+    normalizeGroupWithScale(v.currentObj, norm.scaleFactor);
+  }
+}
+
+function buildCandidatePaths(sampleId, method) {
+  // Most methods are OBJ; some (input, some pointr) are PLY.
+  const base = `./static/data/${sampleId}_${method}`;
+  if (method === "input") return [`${base}.ply`, `${base}.obj`];
+  return [`${base}.obj`, `${base}.ply`];
+}
+
+function loadModelInto(viewer, sampleId, method) {
+  if (!viewer || !viewer.scene || viewer.loading) return;
+  viewer.loading = true;
+  setLoading(viewer, true);
+  clearObject(viewer);
+
+  const candidates = buildCandidatePaths(sampleId, method);
+
+  const tryLoad = (idx) => {
+    if (idx >= candidates.length) {
+      console.error(`No loadable asset found for ${sampleId}_${method}`);
+      if (viewer.loaderEl) viewer.loaderEl.innerHTML = "<div style='color:red;'>Load failed</div>";
+      viewer.loading = false;
+      setLoading(viewer, false);
+      return;
+    }
+
+    const path = candidates[idx];
+    const isPLY = path.toLowerCase().endsWith(".ply");
+
+    const onError = (err) => {
+      console.warn("Failed to load", path, err);
+      tryLoad(idx + 1);
+    };
+
+    if (isPLY) {
+      PLY_LOADER.load(
+        path,
+        (geometry) => {
+          geometry.computeVertexNormals?.();
+          const material = new THREE.PointsMaterial({
+            size: 0.01,
+            color: 0xd8cab0
+          });
+          const points = new THREE.Points(geometry, material);
+
+          const group = new THREE.Group();
+          group.add(points);
+          // Normalize later using shared per-sample scale.
+          viewer.scene.add(group);
+          viewer.currentObj = group;
+
+          // If we already have a reference scale, apply it; otherwise do a temporary self-scale.
+          const norm = NORMALIZATION_BY_SAMPLE.get(sampleId);
+          if (norm) {
+            normalizeGroupWithScale(group, norm.scaleFactor);
+          } else {
+            resetTransform(group);
+            const maxDim = getMaxDim(group);
+            const tmpScale = maxDim > 0 ? 0.9 / maxDim : 1.0;
+            normalizeGroupWithScale(group, tmpScale);
+          }
+
+          // Prefer GT as reference; fallback to UniCo.
+          if ((viewer.role === "gt" || viewer.role === "unico") && maybeSetReferenceScale(sampleId, group)) {
+            applyNormalizationForCurrentSample();
+          }
+
+          viewer.loading = false;
+          setLoading(viewer, false);
+        },
+        undefined,
+        onError
+      );
+    } else {
+      OBJ_LOADER.load(
+        path,
+        (obj) => {
+          styleMesh(obj);
+          const group = new THREE.Group();
+          group.add(obj);
+          viewer.scene.add(group);
+          viewer.currentObj = group;
+
+          const norm = NORMALIZATION_BY_SAMPLE.get(sampleId);
+          if (norm) {
+            normalizeGroupWithScale(group, norm.scaleFactor);
+          } else {
+            resetTransform(group);
+            const maxDim = getMaxDim(group);
+            const tmpScale = maxDim > 0 ? 0.9 / maxDim : 1.0;
+            normalizeGroupWithScale(group, tmpScale);
+          }
+
+          if ((viewer.role === "gt" || viewer.role === "unico") && maybeSetReferenceScale(sampleId, group)) {
+            applyNormalizationForCurrentSample();
+          }
+
+          viewer.loading = false;
+          setLoading(viewer, false);
+        },
+        undefined,
+        onError
+      );
+    }
+  };
+
+  tryLoad(0);
+}
+
+function initCameraAndControls(domElementForControls) {
+  camera = new THREE.PerspectiveCamera(45, 1.0, 0.1, 1000);
+  camera.position.set(0.5, 0.5, 0.6);
+  camera.lookAt(0, 0, 0);
+
+  controls = new THREE.OrbitControls(camera, domElementForControls);
   controls.enableDamping = true;
+  controls.target.set(0, 0, 0);
+  controls.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN
+  };
+  controls.touches = {
+    ONE: THREE.TOUCH.ROTATE,
+    TWO: THREE.TOUCH.DOLLY_PAN
+  };
+  controls.update();
   controls.addEventListener("start", () => {
     autoRotate = false;
   });
-
-  scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
-  dirLight.position.set(5, 10, 5);
-  scene.add(dirLight);
-
-  startRenderLoop();
 }
 
-// ========== Load Model ==========
-function loadModel(glbPath, index) {
-  if (loading) return;
-  loading = true;
+function bindControlsToDom(domElementForControls) {
+  if (!camera || !domElementForControls) return;
+  if (controls && controls.domElement === domElementForControls) return;
 
-  // 1. Clear old object
-  clearCurrentObj();
+  const prevTarget = controls ? controls.target.clone() : new THREE.Vector3(0, 0, 0);
+  const prevEnableDamping = controls ? controls.enableDamping : true;
+  const prevDampingFactor = controls ? controls.dampingFactor : 0.05;
+  const prevRotateSpeed = controls ? controls.rotateSpeed : 1.0;
+  const prevZoomSpeed = controls ? controls.zoomSpeed : 1.0;
+  const prevPanSpeed = controls ? controls.panSpeed : 1.0;
 
-  // 2. Show loader bar
-  const loaderDiv = document.getElementById("loader");
-  const progressDiv = document.getElementById("progress");
-  loaderDiv.style.display = "block";
-  progressDiv.style.width = "0%";
+  if (controls) controls.dispose();
 
-  const thisIndex = index; // Capture index to avoid race condition
+  controls = new THREE.OrbitControls(camera, domElementForControls);
+  controls.enableDamping = prevEnableDamping;
+  controls.dampingFactor = prevDampingFactor;
+  controls.rotateSpeed = prevRotateSpeed;
+  controls.zoomSpeed = prevZoomSpeed;
+  controls.panSpeed = prevPanSpeed;
+  controls.target.copy(prevTarget);
+  controls.mouseButtons = {
+    LEFT: THREE.MOUSE.ROTATE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN
+  };
+  controls.touches = {
+    ONE: THREE.TOUCH.ROTATE,
+    TWO: THREE.TOUCH.DOLLY_PAN
+  };
+  controls.update();
+  controls.addEventListener("start", () => {
+    autoRotate = false;
+  });
+}
 
-  loader.load(
-    glbPath,
-    (gltf) => {
-      if (activeIndex !== thisIndex) {
-        loading = false;
-        return; // If user already clicked another model, discard
-      }
+function handleResize(viewers) {
+  for (const v of viewers) {
+    if (!v || !v.container || !v.renderer) continue;
+    const w = v.container.clientWidth;
+    const h = v.container.clientHeight;
+    if (w <= 0 || h <= 0) continue;
+    v.renderer.setSize(w, h, false);
+  }
+}
 
-      currentObj = gltf.scene;
-      currentObj.traverse((child) => {
-        if (child.isMesh) {
-          if (child.geometry) child.geometry.computeVertexNormals();
-          child.material.color.setHex(0xd8cab0);
-          child.material.roughness = 0.7;
-          child.material.metalness = 0.1;
+function animate(viewers) {
+  if (!running) return;
+  requestAnimationFrame(() => animate(viewers));
 
-          // Optimization for point clouds
-          child.frustumCulled = false;
-          if (child.material.size !== undefined) {
-            child.material.size = 0.01;
-          }
-        }
-      });
+  if (controls) controls.update();
 
-      // Center and scale
-      const box = new THREE.Box3().setFromObject(currentObj);
-      currentObj.scale.set(0.7, 0.7, 0.7);
+  // Ensure canvases match CSS-driven layout sizes (aspect-ratio, grid, etc.)
+  for (const v of viewers) syncRendererSize(v);
 
-      box.setFromObject(currentObj);
-      const center = box.getCenter(new THREE.Vector3());
-      currentObj.position.sub(center);
-
-      scene.add(currentObj);
-
-      // Reset camera and controls each time a new model loads
-      camera.position.set(0.5, 0.5, 0.6);
-      camera.lookAt(0, 0, 0);
-      controls.target.set(0, 0, 0);
-      controls.update();
-
-      loaderDiv.style.display = "none";
-      loading = false;
-    },
-    (xhr) => {
-      if (xhr.lengthComputable) {
-        const percent = (xhr.loaded / xhr.total) * 100;
-        progressDiv.style.width = percent + "%";
-      }
-    },
-    (error) => {
-      console.error("Failed to load model:", error);
-      loaderDiv.innerHTML = "<div style='color:red;'>Load failed</div>";
-      loading = false;
+  // Keep both models rotating equally until user interacts.
+  if (autoRotate) {
+    for (const v of viewers) {
+      if (v && v.currentObj) v.currentObj.rotation.y += 0.01;
     }
-  );
+  }
+
+  // Render both scenes with the same camera (aligned perspective)
+  for (const v of viewers) {
+    if (!v || !v.renderer || !v.scene || !camera) continue;
+    const w = v.container.clientWidth;
+    const h = v.container.clientHeight;
+    if (w <= 0 || h <= 0) continue;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    v.renderer.render(v.scene, camera);
+  }
 }
 
-// ========== Highlighter ==========
-const highlightBox = document.createElement("div");
-highlightBox.style.position = "absolute";
-highlightBox.style.border = "2px solid #4CAF50";   // 蓝色边框
-highlightBox.style.borderRadius = "12px";          // 圆角
-// highlightBox.style.boxShadow = "0 0 8px rgba(0,123,255,0.6)"; // 蓝色发光阴影
-highlightBox.style.pointerEvents = "none";
-highlightBox.style.display = "none";
-
-const gallery = document.getElementById("gallery");
-gallery.parentElement.style.position = "relative"; // 父容器作为定位基准
-gallery.parentElement.appendChild(highlightBox);
-
-// 偏移量，可手动调节
-const offsetX = +40;  // 往右挪 (+)，往左挪 (-)
-const offsetY = +100;  // 往下挪 (+)，往上挪 (-)
-
-function moveHighlight(index) {
-  const thumbW = gallery.clientWidth / cols -7;
-  const thumbH = gallery.clientHeight / rows -12;
-
-  const col = index % cols;
-  const row = Math.floor(index / cols);
-
-  highlightBox.style.display = "block";
-  highlightBox.style.width = (thumbW) + "px";
-  highlightBox.style.height = (thumbH) + "px";
-
-  highlightBox.style.left = (col * thumbW + offsetX) + "px";
-  highlightBox.style.top  = (row * thumbH + offsetY) + "px";
+function setActiveButton(buttons, activeBtn) {
+  for (const b of buttons) {
+    b.classList.remove("is-primary");
+    b.classList.remove("is-light");
+  }
+  if (activeBtn) {
+    activeBtn.classList.add("is-primary");
+    activeBtn.classList.add("is-light");
+  }
 }
 
-// ========== Handle thumbnail click ==========
-gallery.addEventListener("click", (e) => {
-  const rect = gallery.getBoundingClientRect();
-  const x = e.clientX - rect.left - 2;  // captionOffsetX
-  const y = e.clientY - rect.top - 30; // captionOffsetY
+function bindSelectors(unicoViewer, methodViewer) {
+  const sampleContainer = document.getElementById("comparison-samples");
+  const methodContainer = document.getElementById("comparison-methods");
+  if (!sampleContainer || !methodContainer) return;
 
-  const thumbW = gallery.clientWidth / cols;
-  const thumbH = gallery.clientHeight / rows;
+  const sampleButtons = Array.from(sampleContainer.querySelectorAll("[data-sample]"));
+  const methodButtons = Array.from(methodContainer.querySelectorAll("[data-method]"));
 
-  const col = Math.floor(x / thumbW);
-  const row = Math.floor(y / thumbH);
-  const index = row * cols + col;
+  const applyLoad = () => {
+    if (!currentSample) return;
+    loadModelInto(gtViewer, currentSample, "gt");
+    loadModelInto(inputViewer, currentSample, "input");
+    loadModelInto(unicoViewer, currentSample, "unico");
+    loadModelInto(methodViewer, currentSample, currentMethod);
+  };
 
-  if (index >= total || index < 0) return;
+  for (const btn of sampleButtons) {
+    btn.addEventListener("click", () => {
+      currentSample = btn.getAttribute("data-sample");
+      setActiveButton(sampleButtons, btn);
+      applyLoad();
+    });
+  }
 
-  moveHighlight(index); // ✅ 直接用 index
+  for (const btn of methodButtons) {
+    btn.addEventListener("click", () => {
+      currentMethod = btn.getAttribute("data-method") || "symm";
+      setActiveButton(methodButtons, btn);
+      applyLoad();
+    });
+  }
 
-  if (!scene) initViewer();
-  activeIndex = index;
-  autoRotate = true;
-  loadModel(models[index], index);
-});
+  // Defaults
+  const defaultSampleBtn = sampleButtons.find((b) => b.getAttribute("data-default") === "true") || sampleButtons[0];
+  const defaultMethodBtn = methodButtons.find((b) => b.getAttribute("data-default") === "true") || methodButtons[0];
 
-// ========== Page initialization ==========
+  if (defaultMethodBtn) defaultMethodBtn.click();
+  if (defaultSampleBtn) defaultSampleBtn.click();
+}
+
 window.addEventListener("DOMContentLoaded", () => {
-  initViewer();
-  activeIndex = 9;
-  autoRotate = true;
-  loadModel(models[9], 9);
+  if (!unicoContainer || !methodContainer || !gtContainer || !inputContainer) return;
 
-  moveHighlight(9); // ✅ 默认高亮第10个格子
+  const gtViewer = makeViewer(gtContainer, {
+    loader: "loader-gt",
+    progress: "progress-gt",
+    placeholder: "placeholder-gt"
+  });
+  gtViewer.role = "gt";
+
+  const inputViewer = makeViewer(inputContainer, {
+    loader: "loader-input",
+    progress: "progress-input",
+    placeholder: "placeholder-input"
+  });
+  inputViewer.role = "input";
+
+  const unicoViewer = makeViewer(unicoContainer, {
+    loader: "loader-unico",
+    progress: "progress-unico",
+    placeholder: "placeholder-unico"
+  });
+  unicoViewer.role = "unico";
+  const methodViewer = makeViewer(methodContainer, {
+    loader: "loader-method",
+    progress: "progress-method",
+    placeholder: "placeholder-method"
+  });
+  methodViewer.role = "method";
+
+  // Attach controls initially, then re-bind to whichever canvas the user interacts with.
+  initCameraAndControls(unicoViewer.renderer.domElement);
+
+  const canvases = [
+    inputViewer.renderer?.domElement,
+    gtViewer.renderer?.domElement,
+    unicoViewer.renderer?.domElement,
+    methodViewer.renderer?.domElement
+  ].filter(Boolean);
+
+  for (const canvas of canvases) {
+    canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+    canvas.addEventListener("pointerdown", () => bindControlsToDom(canvas), true);
+    canvas.addEventListener("pointerenter", () => bindControlsToDom(canvas));
+    canvas.style.touchAction = "none";
+  }
+
+  const viewers = [gtViewer, inputViewer, unicoViewer, methodViewer];
+  VIEWERS = viewers;
+  // Layout may not be finalized at DOMContentLoaded (fonts/CSS grid/aspect-ratio).
+  // Do an initial resize now and again on the next frame.
+  handleResize(viewers);
+  requestAnimationFrame(() => handleResize(viewers));
+  window.addEventListener("resize", () => handleResize(viewers));
+
+  // Pass required viewers via closures inside bindSelectors
+  // eslint-disable-next-line no-inner-declarations
+  function bindSelectorsWithFixedViewers() {
+    const sampleContainer = document.getElementById("comparison-samples");
+    const methodContainerEl = document.getElementById("comparison-methods");
+    if (!sampleContainer || !methodContainerEl) return;
+
+    const sampleButtons = Array.from(sampleContainer.querySelectorAll("[data-sample]"));
+    const methodButtons = Array.from(methodContainerEl.querySelectorAll("[data-method]"));
+
+    const applyLoad = () => {
+      if (!currentSample) return;
+      loadModelInto(gtViewer, currentSample, "gt");
+      loadModelInto(inputViewer, currentSample, "input");
+      loadModelInto(unicoViewer, currentSample, "unico");
+      loadModelInto(methodViewer, currentSample, currentMethod);
+    };
+
+    for (const btn of sampleButtons) {
+      btn.addEventListener("click", () => {
+        currentSample = btn.getAttribute("data-sample");
+        setActiveButton(sampleButtons, btn);
+        applyLoad();
+      });
+    }
+
+    for (const btn of methodButtons) {
+      btn.addEventListener("click", () => {
+        currentMethod = btn.getAttribute("data-method") || "symm";
+        setActiveButton(methodButtons, btn);
+        applyLoad();
+      });
+    }
+
+    const defaultSampleBtn = sampleButtons.find((b) => b.getAttribute("data-default") === "true") || sampleButtons[0];
+    const defaultMethodBtn = methodButtons.find((b) => b.getAttribute("data-default") === "true") || methodButtons[0];
+
+    if (defaultMethodBtn) defaultMethodBtn.click();
+    if (defaultSampleBtn) defaultSampleBtn.click();
+  }
+
+  bindSelectorsWithFixedViewers();
+
+  running = true;
+  animate(viewers);
 });
