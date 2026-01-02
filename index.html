@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Unified Primitive Proxies for Structured Shape Completion">
+  <meta name="keywords" content="Point cloud completion, Equivariant vision">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unified Primitive Proxies for Structured Shape Completion</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <!-- <link rel="icon" href="./static/images/favicon.svg"> -->
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script>
+  MathJax = {
+    tex: { inlineMath: [['\\(', '\\)'], ['$', '$']] }
+  };
+</script>
+<script id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.125.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/OBJLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.125.0/examples/js/loaders/DRACOLoader.js"></script>
+<script src="./static/js/viewer.js" defer></script>
+</head>
+<body>
+
+<!-- Navigation bar (currently disabled) -->
+<!-- <nav class="navbar" role="navigation" aria-label="main navigation"> ... </nav> -->
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Unified Primitive Proxies for Structured Shape Completion</h1>
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://chenzhaiyu.com">Zhaiyu Chen</a><sup>1,2</sup>,</span>
+            <span class="author-block">
+              <a href="https://www.linkedin.com/in/yuqing-wang-36313b263/">Yuqing Wang</a><sup>1</sup>,</span>
+            <span class="author-block">
+              <a href="https://www.asg.ed.tum.de/sipeo/team/zhu/">Xiao Xiang Zhu</a><sup>1,2</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Technical University of Munich,</span>
+            <span class="author-block"><sup>2</sup>Munich Center for Machine Learning</span>
+            <br><br>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link -->
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- Video Link
+              <span class="link-block">
+                <a href=""
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span> -->
+              <!-- Code Link -->
+              <span class="link-block">
+                <a href="https://github.com/complete3d/unico"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+              <!-- Demo Link -->
+              <span class="link-block">
+                <a href="https://colab.research.google.com/github/complete3d/unico/blob/main/demo.ipynb"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img
+                      src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/googlecolab.svg"
+                      alt="Colab"
+                      style="
+                        /* turn the black SVG into white */
+                        filter: brightness(0) invert(1);
+                      "
+                    />
+                  </span>
+                  <span>Demo</span>
+                  </a>
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img id="teaser" style="width: 95%; height: auto; display: block; margin: 0 auto;" src="./static/images/teaser.png" alt="UniCo teaser figure"/>
+      <h2 class="subtitle has-text-centered" style="font-size: 1.0rem;">
+        <strong>UniCo is a structured shape completion model that, given a partial scan, jointly predicts a complete set of quadratic primitives with geometry, semantics, and inlier membership. The predicted primitives are assembly-ready for surface reconstruction.</strong>
+      </h2>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract -->
+    <div class="columns is-centered has-text-centered" style="font-size: 0.95rem;">
+      <div class="column is-four-fifths">
+        <h2 class="title is-4">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Structured shape completion recovers missing geometry as primitives rather than as unstructured points, which enables primitive-based surface reconstruction. 
+            Instead of following the prevailing cascade, we rethink how primitives and points should interact, and find it more effective to decode primitives in a dedicated pathway that attends to shared shape features. 
+            Following this principle, we present UniCo, which in a single feed-forward pass predicts a set of primitives with complete geometry, semantics, and inlier membership. 
+            To drive this unified representation, we introduce primitive proxies, learnable queries that are contextualized to produce assembly-ready outputs. 
+            To ensure consistent optimization, our training strategy couples primitives and points with online target updates. Across synthetic and real-world benchmarks with four independent assembly solvers, 
+            UniCo consistently outperforms recent baselines, lowering Chamfer distance by up to 50% and improving normal consistency by up to 7%. These results establish an attractive recipe for structured 3D understanding from incomplete data.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract -->
+
+    <!-- Paper video -->
+    <!-- <div class="columns is-centered has-text-centered">
+    <div class="column is-four-fifths">
+      <div class="publication-video">
+        <video controls autoplay loop muted playsinline width="100%">
+          <source src="./static/videos/video.mp4" type="video/mp4">
+          
+        </video>
+      </div>
+    </div>
+  </div> -->
+    <!--/ Paper video -->
+  </div>
+</section>
+
+
+<!-- Comparison Section -->
+<!-- <hr>
+<section class="section">
+  <h2 class="title is-4" style="text-align: center;">Comparison with other methods</h2>
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+<img id="teaser" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/perturbation.png" alt="PaCo teaser figure"/>
+<h2 class="subtitle has-text-centered" style="font-size: 0.95rem;">
+<strong>Robustness to pose and scale perturbations.</strong> Under larger pose and scale changes, our SIM(3)-equivariant model maintains completion quality, whereas competing methods degrade.
+</h2>
+    </div>
+</div>
+
+  <div class="container is-max-desktop"> -->
+    
+    <!-- Shared 3D Viewer -->
+    <!-- <div id="shared-viewer" style="
+      width:100%; 
+      height:600px; 
+      background:#fff; 
+      margin-bottom:40px; 
+      display:flex; 
+      align-items:center; 
+      justify-content:center; 
+      border-radius:12px; 
+      box-shadow:0 4px 12px rgba(0,0,0,0.1);
+      position:relative;
+    "> -->
+   
+
+
+    <!-- Loader -->
+    <!-- <div id="loader" style="
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      font-size:14px;
+      text-align:center;
+      color:#555;
+      display:none;
+    ">
+      <div style="margin-bottom:8px;">Loading...</div>
+      <div style="width:200px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
+        <div id="progress" style="width:0%;height:100%;background:#76b852;"></div>
+      </div>
+    </div> -->
+
+    <!-- Tips box -->
+      <!-- <div id="tips-box" style="
+    position:absolute; 
+    top:10px; 
+    right:10px; 
+    background:#eaffd5; 
+    border-radius:6px; 
+    padding:6px 10px; 
+    font-size:12px; 
+    color:#333; 
+    line-height:1.4; 
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    cursor:pointer;
+  ">
+    💡 <b>Tips</b>
+    <div id="tips-content" style="display:none; margin-top:4px;">
+      ● <b>Zoom</b> - Scroll mouse wheel or pinch<br>
+      ● <b>Rotate</b> - Left drag<br>
+    </div>
+  </div>
+
+<script>
+  const tipsBox = document.getElementById("tips-box");
+  const tipsContent = document.getElementById("tips-content");
+
+  tipsBox.addEventListener("click", () => {
+    if (tipsContent.style.display === "none") {
+      tipsContent.style.display = "block"; // Expand
+    } else {
+      tipsContent.style.display = "none";  // Collapse
+    }
+  });
+</script> -->
+
+
+    <!-- Viewer placeholder -->
+    <!-- <div style="
+    position:absolute; 
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%); 
+    background:#eaffd5; 
+    padding:6px 10px; 
+    border-radius:6px; 
+    font-size:13px; 
+    color:#333;
+  " id="viewer-placeholder">
+    Click an image below to view in 3D
+  </div>
+ </div> -->
+
+    <!-- Puzzle-style gallery image -->
+    <!-- <div id="gallery-wrapper" style="position:relative; display:inline-block;">
+    <img id="gallery" src="./static/images/pcn.png"  style="width:100%; cursor:pointer; margin-top:40px;">
+    <h2 class="subtitle has-text-centered" style="font-size: 0.9rem;">
+<strong> Comparison on PCN.</strong> Our SIM(3)-equivariant model outperforms other equivariant meth-
+ods restricted to SO(3) and SE(3) and non-equivariant baseline trained with SIM(3) augmentation.
+</h2>
+      <div id="highlight-box"></div>
+</div>
+  </div>
+
+
+  <div class="container is-max-desktop">
+    <div class="hero-body">  
+      <img id="table1" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/table1.png" alt="PaCo teaser figure"/>
+      <h2 class="subtitle has-text-centered" style="font-size: 0.9rem;">
+        <strong>Evaluation on PCN.</strong> We compare methods supporting only SO(3) (top) and SE(3) (middle),
+and those with SIM(3) augmentation (bottom). “Transform” indicate train/test settings. Our model
+outperforms competitors limited to partial transform groups and those with data augmentation. CD-<span>\(\ell_1\)</span>
+values are scaled by a factor of 1000. Bold numbers indicate the best SIM(3) results.
+      </h2>
+    </div>
+  </div>
+
+  <div class="container is-max-desktop">
+    <div class="hero-body">  
+      <img id="generalization" style="width: 60%; height: auto; display: block; margin: 0 auto;" src="./static/images/generalization.png" alt="PaCo teaser figure"/>
+      <h2 class="subtitle has-text-centered" style="font-size: 0.9rem;">
+        <strong>Cross-domain generalization to real scans. </strong> Our PCN-trained model completes driving (KITTI) and indoor (OmniObject3D) scans, with more details than the augmented baseline.
+      </h2>
+    </div>
+  </div> -->
+
+    <!-- <div class="container is-max-desktop">
+    <div class="hero-body">  
+      <img id="table2" style="width: 50%; height: auto; display: block; margin: 0 auto;" src="./static/images/table2.png" alt="PaCo teaser figure"/>
+      <h2 class="subtitle has-text-centered" style="font-size: 0.9rem;">
+        Under larger pose and scale changes, our SIM(3)-equivariant model maintains completion quality, whereas competing methods degrade.
+      </h2>
+    </div>
+  </div>
+
+      <div class="container is-max-desktop">
+    <div class="hero-body">  
+      <img id="table3" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/table3.png" alt="PaCo teaser figure"/>
+      <h2 class="subtitle has-text-centered" style="font-size: 0.9rem;">
+        Under larger pose and scale changes, our SIM(3)-equivariant model maintains completion quality, whereas competing methods degrade.
+      </h2>
+    </div> -->
+  </div>
+</section>
+
+<hr>
+<!-- <section class="hero architecture">
+  <div class="container is-max-desktop">
+    <h2 class="title is-4" style="text-align: center;">How it works</h2>
+    <div class="hero-body">
+      <img id="architecture" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/architecture.png" alt="PaCo architecture"/>
+      <h2 class="subtitle" style="font-size: 0.9rem;">
+        <strong>Overview of our $\mathrm{SIM}(3)$-equivariant shape completion pipeline.</strong> 
+        We extract point patch features with VN-DGCNN and feed them into a Transformer encoder-decoder. 
+        Within each layer module, we $(i)$ canonicalize features to be translation- and scale-invariant, 
+        $(ii)$ reason intrinsic geometry via $\mathrm{SIM}(3)$-invariant attention, 
+        and $(iii)$ restore the original transform. 
+        This guarantees that both intermediate features and the reconstructed shape adhere to SIM(3) transforms.
+      </h2>
+    </div>
+  </div>
+</section> -->
+<section class="hero architecture">
+  <div class="container is-max-desktop">
+    <h2 class="title is-4" style="text-align: center;">How it works</h2>
+    <div class="hero-body">
+      <img id="architecture" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/architecture.png" alt="PaCo architecture"/>
+      <h2 class="subtitle" style="font-size: 0.9rem; line-height:1.5;">
+        <strong></strong>
+      </h2>
+    </div>
+  </div>
+</section>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{chen2026unico,
+    title={Unified Primitive Proxies for Structured Shape Completion}, 
+    author={Zhaiyu Chen and Yuqing Wang and Xiao Xiang Zhu},
+    journal={arXiv preprint arXiv:TBD},
+    year={2026}
+}</code></pre>
+
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            Website template from <a
+              href="https://github.com/nerfies/nerfies.github.io">Nerfies</a> 
+              and licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC-BY-SA-4.0</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
