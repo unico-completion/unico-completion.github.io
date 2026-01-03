@@ -180,7 +180,7 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </p>
 
     <div class="buttons is-centered is-flex-wrap-wrap" id="comparison-samples" style="gap: 0.5rem; margin-bottom: 0.75rem;">
-      <button class="button is-small is-rounded" type="button" data-sample="00824026" data-default="true">Easy</button>
+      <button class="button is-small is-rounded" type="button" data-sample="00824026" data-default="true">Simple</button>
       <button class="button is-small is-rounded" type="button" data-sample="00634373">Medium</button>
       <button class="button is-small is-rounded" type="button" data-sample="00814615">Hard</button>
     </div>
@@ -293,6 +293,305 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
         <div id="unico-viewer" style="
           width:100%;
           background:#fff;
+          display:block;
+          border-radius:12px;
+          box-shadow:0 4px 12px rgba(0,0,0,0.08);
+          position:relative;
+          overflow:hidden;
+        ">
+          <div id="unico-mesh-subview" style="
+            position:absolute;
+            inset:0;
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+          ">
+            <div style="
+              position:absolute;
+              top:10px;
+              left:50%;
+              transform:translateX(-50%);
+              font-size:0.9rem;
+              font-weight:700;
+              background: rgba(255,255,255,0.75);
+              padding: 0.12rem 0.55rem;
+              border-radius: 999px;
+              color:#222;
+              pointer-events:none;
+              z-index:2;
+            ">UniCo</div>
+            <div id="loader-unico" style="
+              position:absolute;
+              top:50%;
+              left:50%;
+              transform:translate(-50%,-50%);
+              font-size:14px;
+              text-align:center;
+              color:#555;
+              display:none;
+              background: rgba(255,255,255,0.85);
+              padding: 10px 12px;
+              border-radius: 8px;
+              z-index:2;
+            ">
+              <div style="margin-bottom:8px;">Loading...</div>
+              <div style="width:200px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
+                <div id="progress-unico" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+              </div>
+            </div>
+            <div id="placeholder-unico" style="display:none;"></div>
+          </div>
+
+          <div id="unico-points-subview" style="
+            position:absolute;
+            right:12px;
+            bottom:12px;
+            width:40%;
+            height:40%;
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background: rgba(255,255,255,0.96);
+            border-radius:10px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.10);
+          ">
+            <div id="loader-unico-points" style="
+              position:absolute;
+              top:50%;
+              left:50%;
+              transform:translate(-50%,-50%);
+              font-size:14px;
+              text-align:center;
+              color:#555;
+              display:none;
+              background: rgba(255,255,255,0.85);
+              padding: 10px 12px;
+              border-radius: 8px;
+              z-index:2;
+            ">
+              <div style="margin-bottom:8px;">Loading...</div>
+              <div style="width:200px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
+                <div id="progress-unico-points" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+              </div>
+            </div>
+            <div id="placeholder-unico-points" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div id="method-viewer" style="
+          width:100%;
+          background:#fff;
+          display:block;
+          border-radius:12px;
+          box-shadow:0 4px 12px rgba(0,0,0,0.08);
+          position:relative;
+          overflow:hidden;
+        ">
+          <div id="method-mesh-subview" style="
+            position:absolute;
+            inset:0;
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+          ">
+            <div style="
+              position:absolute;
+              top:10px;
+              left:50%;
+              transform:translateX(-50%);
+              font-size:0.9rem;
+              font-weight:700;
+              background: rgba(255,255,255,0.75);
+              padding: 0.12rem 0.55rem;
+              border-radius: 999px;
+              color:#222;
+              pointer-events:none;
+              z-index:2;
+            ">Method</div>
+            <div id="loader-method" style="
+              position:absolute;
+              top:50%;
+              left:50%;
+              transform:translate(-50%,-50%);
+              font-size:14px;
+              text-align:center;
+              color:#555;
+              display:none;
+              background: rgba(255,255,255,0.85);
+              padding: 10px 12px;
+              border-radius: 8px;
+              z-index:2;
+            ">
+              <div style="margin-bottom:8px;">Loading...</div>
+              <div style="width:200px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
+                <div id="progress-method" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+              </div>
+            </div>
+            <div id="placeholder-method" style="display:none;"></div>
+          </div>
+
+          <div id="method-points-subview" style="
+            position:absolute;
+            right:12px;
+            bottom:12px;
+            width:40%;
+            height:40%;
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background: rgba(255,255,255,0.96);
+            border-radius:10px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.10);
+          ">
+            <div id="loader-method-points" style="
+              position:absolute;
+              top:50%;
+              left:50%;
+              transform:translate(-50%,-50%);
+              font-size:14px;
+              text-align:center;
+              color:#555;
+              display:none;
+              background: rgba(255,255,255,0.85);
+              padding: 10px 12px;
+              border-radius: 8px;
+              z-index:2;
+            ">
+              <div style="margin-bottom:8px;">Loading...</div>
+              <div style="width:200px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
+                <div id="progress-method-points" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+              </div>
+            </div>
+            <div id="placeholder-method-points" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="comparison-building">
+  <div class="container is-max-desktop">
+    <div class="buttons is-centered is-flex-wrap-wrap" id="comparison-samples-building" style="gap: 0.5rem; margin-bottom: 0.75rem;">
+      <button class="button is-small is-rounded" type="button" data-sample="bag_0518100000336225" data-default="true">Building 1</button>
+      <button class="button is-small is-rounded" type="button" data-sample="bag_0518100000339091">Building 2</button>
+      <button class="button is-small is-rounded" type="button" data-sample="bag_0518100000343111">Building 3</button>
+    </div>
+
+    <div id="comparison-grid-header-building" style="margin-bottom: 0.5rem;">
+      <div></div>
+      <div></div>
+      <div class="buttons is-centered is-flex-wrap-wrap" id="comparison-methods-building" style="gap: 0.5rem; margin: 0;">
+        <button class="button is-small is-rounded" type="button" data-method="paco" data-default="true">PaCo</button>
+        <button class="button is-small is-rounded" type="button" data-method="symm">Symm</button>
+        <button class="button is-small is-rounded" type="button" data-method="odg">ODGNet</button>
+        <button class="button is-small is-rounded" type="button" data-method="ada">AdaPoinTr</button>
+      </div>
+    </div>
+
+    <div id="comparison-grid-viewers-building">
+      <div id="comparison-left-stack-building">
+        <div id="input-viewer-building" style="
+          width:100%;
+          background:#fff;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          border-radius:12px;
+          box-shadow:0 4px 12px rgba(0,0,0,0.08);
+          position:relative;
+          overflow:hidden;
+        ">
+          <div style="
+            position:absolute;
+            top:10px;
+            left:50%;
+            transform:translateX(-50%);
+            font-size:0.9rem;
+            font-weight:700;
+            background: rgba(255,255,255,0.75);
+            padding: 0.12rem 0.55rem;
+            border-radius: 999px;
+            color:#222;
+            pointer-events:none;
+          ">Input</div>
+          <div id="loader-input-building" style="
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            font-size:14px;
+            text-align:center;
+            color:#555;
+            display:none;
+            background: rgba(255,255,255,0.85);
+            padding: 10px 12px;
+            border-radius: 8px;
+          ">
+            <div style="margin-bottom:8px;">Loading...</div>
+            <div style="width:160px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
+              <div id="progress-input-building" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+            </div>
+          </div>
+          <div id="placeholder-input-building" style="display:none;"></div>
+        </div>
+
+        <div id="gt-viewer-building" style="
+          width:100%;
+          background:#fff;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          border-radius:12px;
+          box-shadow:0 4px 12px rgba(0,0,0,0.08);
+          position:relative;
+          overflow:hidden;
+        ">
+          <div style="
+            position:absolute;
+            top:10px;
+            left:50%;
+            transform:translateX(-50%);
+            font-size:0.9rem;
+            font-weight:700;
+            background: rgba(255,255,255,0.75);
+            padding: 0.12rem 0.55rem;
+            border-radius: 999px;
+            color:#222;
+            pointer-events:none;
+          ">GT</div>
+          <div id="loader-gt-building" style="
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%,-50%);
+            font-size:14px;
+            text-align:center;
+            color:#555;
+            display:none;
+            background: rgba(255,255,255,0.85);
+            padding: 10px 12px;
+            border-radius: 8px;
+          ">
+            <div style="margin-bottom:8px;">Loading...</div>
+            <div style="width:160px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
+              <div id="progress-gt-building" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+            </div>
+          </div>
+          <div id="placeholder-gt-building" style="display:none;"></div>
+        </div>
+      </div>
+
+      <div>
+        <div id="unico-viewer-building" style="
+          width:100%;
+          background:#fff;
           display:flex;
           align-items:center;
           justify-content:center;
@@ -314,7 +613,7 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
             color:#222;
             pointer-events:none;
           ">UniCo</div>
-          <div id="loader-unico" style="
+          <div id="loader-unico-building" style="
             position:absolute;
             top:50%;
             left:50%;
@@ -329,15 +628,15 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
           ">
             <div style="margin-bottom:8px;">Loading...</div>
             <div style="width:200px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
-              <div id="progress-unico" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+              <div id="progress-unico-building" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
             </div>
           </div>
-          <div id="placeholder-unico" style="display:none;"></div>
+          <div id="placeholder-unico-building" style="display:none;"></div>
         </div>
       </div>
 
       <div>
-        <div id="method-viewer" style="
+        <div id="method-viewer-building" style="
           width:100%;
           background:#fff;
           display:flex;
@@ -348,7 +647,20 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
           position:relative;
           overflow:hidden;
         ">
-          <div id="loader-method" style="
+          <div style="
+            position:absolute;
+            top:10px;
+            left:50%;
+            transform:translateX(-50%);
+            font-size:0.9rem;
+            font-weight:700;
+            background: rgba(255,255,255,0.75);
+            padding: 0.12rem 0.55rem;
+            border-radius: 999px;
+            color:#222;
+            pointer-events:none;
+          ">Method</div>
+          <div id="loader-method-building" style="
             position:absolute;
             top:50%;
             left:50%;
@@ -363,10 +675,10 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
           ">
             <div style="margin-bottom:8px;">Loading...</div>
             <div style="width:200px;height:6px;background:#ddd;position:relative;border-radius:3px;overflow:hidden;">
-              <div id="progress-method" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
+              <div id="progress-method-building" style="width:0%;height:100%;background: hsl(171, 100%, 41%);"></div>
             </div>
           </div>
-          <div id="placeholder-method" style="display:none;"></div>
+          <div id="placeholder-method-building" style="display:none;"></div>
         </div>
       </div>
     </div>
@@ -374,13 +686,25 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </section>
 
 
+<section class="hero architecture">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img id="architecture" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/robustness.png" alt="Robustness"/>
+      <h2 class="subtitle" style="font-size: 0.95rem; line-height:1.5;">
+        <strong>Left</strong>: as incompleteness grows from 25% to 75%, UniCo maintains lower CD and higher NC than pointwise baselines. 
+        <strong>Middle</strong>: under the <a href="https://sime-completion.github.io/" target="_blank" rel="noopener noreferrer">debiased normalization protocol</a>, UniCo remains stable with low pose and scale bias. 
+        <strong>Right</strong>: under Gaussian jitter of 1-3%, performance degrades gracefully.
+      </h2>
+    </div>
+  </div>
+</section>
 
 <hr>
 <section class="hero architecture">
   <div class="container is-max-desktop">
     <h2 class="title is-4" style="text-align: center;">How it works</h2>
     <div class="hero-body">
-      <img id="architecture" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/architecture.png" alt="PaCo architecture"/>
+      <img id="architecture" style="width: 100%; height: auto; display: block; margin: 0 auto;" src="./static/images/architecture.png" alt="UniCo architecture"/>
       <h2 class="subtitle" style="font-size: 0.95rem; line-height:1.5;">
         Shape features from a partial point cloud feed two coordinated pathways. 
         The <strong>point pathway</strong> decodes dense completed points. 

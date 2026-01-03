@@ -158,13 +158,16 @@ body {
 
 /* ===================== Comparison (Interactive 3D) ===================== */
 #comparison-grid-header,
-#comparison-grid-viewers {
+#comparison-grid-viewers,
+#comparison-grid-header-building,
+#comparison-grid-viewers-building {
   display: grid;
   grid-template-columns: 1fr 2fr 2fr;
   gap: 1rem;
 }
 
-#comparison-left-stack {
+#comparison-left-stack,
+#comparison-left-stack-building {
   display: flex;
   flex-direction: column;
   /* Left column is 1fr wide while middle/right are 2fr.
@@ -175,14 +178,18 @@ body {
 }
 
 #input-viewer,
-#gt-viewer {
+#gt-viewer,
+#input-viewer-building,
+#gt-viewer-building {
   flex: 1 1 0;
   min-height: 0;
   min-width: 0;
 }
 
 #unico-viewer,
-#method-viewer {
+#method-viewer,
+#unico-viewer-building,
+#method-viewer-building {
   aspect-ratio: 4 / 3;
   min-height: 220px;
   min-width: 0;
@@ -191,7 +198,11 @@ body {
 #input-viewer canvas,
 #gt-viewer canvas,
 #unico-viewer canvas,
-#method-viewer canvas {
+#method-viewer canvas,
+#input-viewer-building canvas,
+#gt-viewer-building canvas,
+#unico-viewer-building canvas,
+#method-viewer-building canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
