@@ -27,6 +27,13 @@ body {
   font-family: 'Google Sans', sans-serif;
 }
 
+.teaser-media {
+  width: 95%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
 
 .publication-title {
 }
